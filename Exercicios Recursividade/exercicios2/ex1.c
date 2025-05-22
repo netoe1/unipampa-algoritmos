@@ -1,28 +1,26 @@
 /*
-a) Implementar uma função recursiva para encontrar o máximo divisor comum de
-dois números naturais A e B. Se o resto (a % b == 0 ), então mdc = b, senão chamar
-função passando (b, a % b).
-Exemplo: mdc(8, 12) = 4, mdc(1989, 72) = 9
+    1. Implemente um método recursivo que receba como entrada um número inteiro
+positivo N e retorne o seguinte cálculo:
+ 1 + 2 + 3 + 4 + ... + N.
 */
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <locale.h>
 
-void mdc(int a, int b)
+int soma_n(int n)
 {
-    if (a % b == 0)
+    if (n == 0)
     {
-        return b;
+        return 0;
     }
     else
     {
-        return mdc(b, a % b);
+        return (n + soma_n(n - 1));
     }
 }
 int main(void)
 {
-    setlocale(LC_ALL, "");
+    int n = 4;
+    printf("\nSoma %d:%d", n, soma_n(n));
     return 0;
 }
