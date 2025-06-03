@@ -1,0 +1,10 @@
+
+Número do vetor[10]:[2]
+
+Número do vetor[10]:[4]
+
+Número do vetor[10]:[6]
+
+Número do vetor[10]:[8]
+
+Número do vetor[10]:[10]
