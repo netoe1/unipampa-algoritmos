@@ -5,6 +5,7 @@
 #define ARQUIVO_BIN "funcionarios.bin"
 #define MAX_FUNCIONARIOS 200
 #define FUNCIONARIO_INVALIDO -1
+
 #pragma endregion CONSTS
 
 #pragma region STRUCT_DEFINITION
@@ -24,15 +25,14 @@ funcionarioInvalido();
 Funcionario cadastrarFuncionario();
 void listarTodosOsFuncionarios();
 Funcionario buscarFuncionarioPorId(int id);
-Funcionario editarDadosDoFuncionaro(int id, char cargoNovo[50], float salarioNovo);
+Funcionario editarDadosDoFuncionario(int id, char cargoNovo[50], float salarioNovo);
 Funcionario removerFuncionario(int id);
 int getFuncionarioIndex(int id);
 void resetarMemoria();
 void printFuncionario(Funcionario f);
 void lerArquivo();
 void salvarArquivo();
-void saltarArquivo_caseDeletar();
-
+void wait()
 #pragma endregion HEADER
 
 #endif

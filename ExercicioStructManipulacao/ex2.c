@@ -2,139 +2,176 @@
 #include <stdlib.h>
 #include <string.h>
 #include <locale.h>
-#include "ex2.h"
-#include "sgets.c"
-/*
-Exercício 2: Sistema de Gerenciamento de Funcionários com Arquivo Binário
-Você foi contratado para criar um sistema simples de gerenciamento de funcionários para uma
-empresa. Este sistema deve utilizar uma estrutura (`struct`) para representar os funcionários, e
-todos os dados devem ser armazenados permanentemente em um **arquivo binário** chamado
-"funcionarios.bin".
-Requisitos
-1. Defina uma estrutura Funcionario com os seguintes campos:
- typedef struct {
- int id; // Código único do funcionário
- char nome[100]; // Nome completo
- char cargo[50]; // Cargo ocupado
- float salario; // Salário mensal
- } Funcionario;
 
-2. O sistema deve apresentar um menu com as seguintes opções:
- 1. Cadastrar novo funcionário
- 2. Listar todos os funcionários
- 3. Buscar funcionário por ID
- 4. Alterar dados de um funcionário
- 5. Remover funcionário
- 6. Sair
- ```
-Detalhamento das funcionalidades
-1. Cadastrar novo funcionário
-* O usuário informa os dados do funcionário.
-* O sistema salva os dados no arquivo binário "funcionarios.bin" sem apagar os existentes.
-* O ID deve ser único. Verifique se já existe no arquivo antes de cadastrar.
-2. Listar todos os funcionários
-* O programa lê o arquivo binário e exibe todos os funcionários em uma tabela com cabeçalho.
-* Exemplo de saída:
- ID Nome Cargo Salário
- 1 João Silva Analista 3500.00
- 2 Maria Souza Gerente 5800.00
-3. Buscar funcionário por ID
-* O usuário digita um ID e o sistema procura no arquivo.
-* Se encontrado, exibe os dados do funcionário; senão, exibe mensagem de erro.
-4. Alterar dados de um funcionário
-* O usuário fornece um ID.
-* O programa busca o funcionário, permite editar cargo e salário, e atualiza os dados diretamente
-no arquivo.
-5. Remover funcionário
-* O sistema cria um novo arquivo temporário copiando todos os funcionários exceto o que tem o
-ID informado.
-* Depois, substitui o arquivo original por este novo.
-* Essa operação remove de fato o registro.
-6. Sair
-* Finaliza o programa.
-Regras e observações
-* Use funções específicas para cada operação.
-* Trate erros como: não conseguir abrir arquivos, digitação inválida, ID duplicado, etc.
-* Organize bem o código e use comentários para facilitar a leitura.
-*/
-// #pragma region CONSTS
-// #define ARQUIVO_BIN "funcionarios.bin"
-// #define MAX_FUNCIONARIOS 200
-// #define FUNCIONARIO_INVALIDO -1
-// #pragma endregion CONSTS
+#define MAX_FUNCIONARIOS 100
+#define FUNCIONARIO_INVALIDO -1
 
-// #pragma region STRUCT_DEFINITION
-// typedef struct
-// {
-//     int id;         // Código único do funcionário
-//     char nome[100]; // Nome completo
-//     char cargo[50]; // Cargo ocupado
-//     float salario;  // Salário mensal
-// } Funcionario;
+typedef struct
+{
+    int id;
+    char nome[100];
+    char cargo[50];
+    float salario;
+} Funcionario;
 
-// #pragma endregion STRUCT_DEFINITION
 Funcionario todosOsFuncionarios[MAX_FUNCIONARIOS];
 int funcionariosIndex = 0;
 
-// #pragma region HEADER
-// Funcionario
-// funcionarioInvalido();
-// Funcionario cadastrarFuncionario();
-// void listarTodosOsFuncionarios();
-// Funcionario buscarFuncionarioPorId(int id);
-// Funcionario editarDadosDoFuncionaro(int id, char cargoNovo[50], float salarioNovo);
-// Funcionario removerFuncionario(int id);
-// int getFuncionarioIndex(int id);
-// void resetarMemoria();
-// void printFuncionario(Funcionario f);
-// void lerArquivo();
-// void salvarArquivo();
-// void saltarArquivo_caseDeletar();
-
-// #pragma endregion HEADER
+Funcionario funcionarioInvalido();
+Funcionario cadastrarFuncionario();
+void listarTodosOsFuncionarios();
+Funcionario buscarFuncionarioPorId(int id);
+Funcionario editarDadosDoFuncionario(int id, char cargoNovo[50], float salarioNovo);
+Funcionario removerFuncionario(int id);
+void printFuncionario(Funcionario f);
+void lerArquivo();
+void salvarArquivo();
+int getFuncionarioIndex(int id);
+void resetarMemoria();
+void wait();
 
 int main(void)
 {
     setlocale(LC_ALL, "");
     resetarMemoria();
-
+    lerArquivo();
+    int op = -1;
+    int id = 0;
+    while (op != 0)
+    {
+        printf("=====SISTEMA DE CADASTRO=====\n1. Cadastrar novo funcionário\n2. Listar todos os funcionários\n3. Buscar funcionário por ID\n4. Alterar dados de um funcionário\n5. Remover funcionário\n6. Sair\n");
+        scanf("%d", &op);
+        switch (op)
+        {
+        case 1:
+        {
+            Funcionario novo = cadastrarFuncionario();
+            printFuncionario(novo);
+            wait();
+            break;
+        }
+        case 2:
+            listarTodosOsFuncionarios();
+            wait();
+            break;
+        case 3:
+            puts("\nDigite o id do funcionário:");
+            scanf("%d", &id);
+            {
+                Funcionario buscar = buscarFuncionarioPorId(id);
+                if (buscar.id == FUNCIONARIO_INVALIDO)
+                {
+                    puts("O funcionário não foi encontrado...");
+                    wait();
+                }
+                else
+                {
+                    printFuncionario(buscar);
+                    wait();
+                }
+            }
+            break;
+        case 4:
+            puts("\nDigite o id do funcionario que você quer editar:");
+            scanf("%d", &id);
+            if (buscarFuncionarioPorId(id).id != FUNCIONARIO_INVALIDO)
+            {
+                Funcionario ret;
+                char aux[50];
+                float salario;
+                printf("\nDigite o novo cargo:");
+                setbuf(stdin, NULL);
+                fgets(aux, sizeof(aux) - 1, stdin);
+                aux[strcspn(aux, "\n")] = '\0';
+                printf("\nDigite o novo salário:");
+                scanf("%f", &salario);
+                ret = editarDadosDoFuncionario(id, aux, salario);
+                if (ret.id == FUNCIONARIO_INVALIDO)
+                {
+                    puts("Não foi possível editar o usuário!");
+                    wait();
+                }
+                else
+                {
+                    puts("O usuário foi editado!");
+                    printFuncionario(ret);
+                    wait();
+                }
+            }
+            else
+            {
+                puts("O funcionário não foi encontrado...");
+                wait();
+            }
+            break;
+        case 5:
+            puts("\nDigite o id do funcionário");
+            scanf("%d", &id);
+            if (removerFuncionario(id).id != FUNCIONARIO_INVALIDO)
+            {
+                puts("O usuário foi removido com sucesso!");
+                wait();
+            }
+            else
+            {
+                puts("Funcionário não encontrado.");
+                wait();
+            }
+            break;
+        case 6:
+            op = 0;
+            break;
+        default:
+            break;
+        }
+    }
+    salvarArquivo();
     return EXIT_SUCCESS;
 }
 
-#pragma region IMPLEMENTATION
+Funcionario funcionarioInvalido()
+{
+    Funcionario erro;
+    erro.id = FUNCIONARIO_INVALIDO;
+    erro.salario = -1;
+    return erro;
+}
+
 Funcionario cadastrarFuncionario()
 {
     Funcionario novoFuncionario;
-    int op = 0;
     if (funcionariosIndex == MAX_FUNCIONARIOS)
     {
         puts("[ERRO]: Você chegou ao limite máximo de cadastro do sistema!");
+        wait();
         return funcionarioInvalido();
     }
-
     while (1)
     {
         printf("\nID:");
         scanf("%d", &novoFuncionario.id);
-
         if (novoFuncionario.id < 0)
         {
             puts("[ERRO]: O id do funcionário não pode ser negativo!");
+            wait();
             continue;
         }
-
-        if (buscarFuncionarioPorId(novoFuncionario.id).id != -1)
+        if (buscarFuncionarioPorId(novoFuncionario.id).id != FUNCIONARIO_INVALIDO)
         {
             puts("[ERRO]: Esse funcionário já existe, digite outro id!");
+            wait();
             continue;
         }
         break;
     }
-
     printf("\nNome:");
-    sgets(novoFuncionario.nome, sizeof(novoFuncionario.nome) - 1);
+    setbuf(stdin, NULL);
+    fgets(novoFuncionario.nome, sizeof(novoFuncionario.nome) - 1, stdin);
+    novoFuncionario.nome[strcspn(novoFuncionario.nome, "\n")] = '\0';
     printf("\nCargo:");
-    sgets(novoFuncionario.cargo, sizeof(novoFuncionario.cargo) - 1);
+    setbuf(stdin, NULL);
+    fgets(novoFuncionario.cargo, sizeof(novoFuncionario.cargo) - 1, stdin);
+    novoFuncionario.cargo[strcspn(novoFuncionario.cargo, "\n")] = '\0';
     while (1)
     {
         printf("\nSalário:");
@@ -142,21 +179,14 @@ Funcionario cadastrarFuncionario()
         if (novoFuncionario.salario <= 0)
         {
             puts("O salário do funcionário deve ser > 0!");
+            wait();
             continue;
         }
         break;
     }
-    funcionariosIndex++;
-
+    todosOsFuncionarios[funcionariosIndex++] = novoFuncionario;
+    salvarArquivo();
     return novoFuncionario;
-}
-
-Funcionario funcionarioInvalido()
-{
-    Funcionario erro;
-    erro.id = -1;
-    erro.salario = -1;
-    return erro;
 }
 
 void listarTodosOsFuncionarios()
@@ -188,12 +218,12 @@ Funcionario editarDadosDoFuncionario(int id, char cargoNovo[50], float salarioNo
     if (func_id == -1)
     {
         puts("[ERRO]:O funcionário não existe!");
+        wait();
         return funcionarioInvalido();
     }
-
     strcpy(todosOsFuncionarios[func_id].cargo, cargoNovo);
     todosOsFuncionarios[func_id].salario = salarioNovo;
-
+    salvarArquivo();
     return todosOsFuncionarios[func_id];
 }
 
@@ -202,18 +232,20 @@ Funcionario removerFuncionario(int id)
     int index = getFuncionarioIndex(id);
     if (index == -1)
     {
-        puts("[ERRO]:O funcionário não existe!");
+        puts("[ERRO]: O funcionário não existe!");
+        wait();
         return funcionarioInvalido();
     }
-
+    Funcionario removido = todosOsFuncionarios[index];
     todosOsFuncionarios[index] = funcionarioInvalido();
     funcionariosIndex--;
-    return todosOsFuncionarios[index];
+    salvarArquivo();
+    return removido;
 }
 
 void printFuncionario(Funcionario f)
 {
-    printf("=====Funcionário %100s=====\nID:%d\nCargo:%49s\nSalário:R$ %.2f\n", f.nome, f.id, f.cargo, f.salario);
+    printf("=====Funcionário %s=====\nID:%d\nCargo:%s\nSalário:R$ %.2f\n", f.nome, f.id, f.cargo, f.salario);
 }
 
 void lerArquivo()
@@ -221,22 +253,32 @@ void lerArquivo()
     FILE *file = fopen("funcionarios.bin", "rb");
     if (!file)
     {
-        puts("[ERRO]: Erro ao abrir o arquivo, ele não existe, ou você não tem permissão!");
-        fclose(file);
+        return;
     }
+    int i = 0;
+    while (i < MAX_FUNCIONARIOS && fread(&todosOsFuncionarios[i], sizeof(Funcionario), 1, file) == 1)
+        i++;
+    funcionariosIndex = i;
     fclose(file);
 }
+
 void salvarArquivo()
 {
     FILE *file = fopen("funcionarios.bin", "wb");
     if (!file)
     {
-        puts("[ERRO]: Erro ao abrir o arquivo, ele não existe, ou você não tem permissão!");
-        fclose(file);
+        puts("[ERRO]: Erro ao abrir o arquivo para escrita!");
+        return;
+    }
+    for (int i = 0; i < MAX_FUNCIONARIOS; i++)
+    {
+        if (todosOsFuncionarios[i].id != FUNCIONARIO_INVALIDO)
+        {
+            fwrite(&todosOsFuncionarios[i], sizeof(Funcionario), 1, file);
+        }
     }
     fclose(file);
 }
-void saltarArquivo_caseDeletar();
 
 int getFuncionarioIndex(int id)
 {
@@ -252,12 +294,16 @@ int getFuncionarioIndex(int id)
 
 void resetarMemoria()
 {
-    int i = 0;
     funcionariosIndex = 0;
-    while (i++ < MAX_FUNCIONARIOS)
+    for (int i = 0; i < MAX_FUNCIONARIOS; i++)
     {
         todosOsFuncionarios[i] = funcionarioInvalido();
     }
 }
 
-#pragma endregion IMPLEMENTATION
+void wait()
+{
+    puts("Aperte ENTER para continuar...");
+    setbuf(stdin, NULL);
+    getchar();
+}
